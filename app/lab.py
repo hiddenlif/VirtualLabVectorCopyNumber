@@ -1,9 +1,8 @@
 """Synthetic digital PCR: vector copies per cell-equivalent and integration evidence.
 
 Units and definitions
-    cell-equivalent  1/303 ng of DNA, carrying 2 reference copies (a simplified fixture: 3.3 pg is
-                     the haploid human genome mass, so real DNA has about 152 diploid genomes per ng;
-                     the copies-per-cell-equivalent ratio does not depend on this constant)
+    cell-equivalent  one diploid human genome, 6.6 pg of DNA (3.3 pg haploid), so about 151.5 per ng;
+                     it carries 2 reference copies
     reference target RPP30-like locus, 2 copies per cell-equivalent, amplifies fully
     vector target    amplifies with efficiency eta (inhibition), see below
     VCN              vector copies per cell-equivalent. The estimand is the INTEGRATED VCN v:
@@ -13,7 +12,7 @@ Units and definitions
 
 One well
     20000 droplets are generated; n_acc of them (about 17500, varying per well) are accepted.
-    Copies loaded: 2*GE reference, GE*(v + n_ni*decay) vector, with GE = input_ng*303*load.
+    Copies loaded: 2*GE reference, GE*(v + n_ni*decay) vector, with GE = input_ng*151.5*load.
     Per-droplet mean lambda = copies * efficiency / 20000 (+ background for the vector channel);
     a well returns positive counts ~ Binomial(n_acc, 1 - exp(-lambda)).
     efficiency (vector and spike) = 1 / (1 + k_lot * input_ng / 10); reference efficiency = 1.
@@ -24,7 +23,7 @@ import numpy as np
 from harness import LabError
 
 DROPLETS = 20000
-GE_PER_NG = 303.0
+GE_PER_NG = 151.5
 SPIKE_COPIES = 4000.0
 DECAY_LATE = 0.5 ** 4
 INPUT_MENU = [1.25, 2.5, 5.0, 10.0, 20.0, 40.0]

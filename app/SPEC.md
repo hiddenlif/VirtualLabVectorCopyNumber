@@ -8,7 +8,7 @@ Same JSON-lines exchange as in `labclient.py`: a `hello` line carries the config
 `{"action": ..., ...}` lines and reads `{"ok": true, "result": ...}` or `{"ok": false, "error": ...}`,
 and ends with `{"action": "submit", "result": {...}}`.
 
-The grader runs `solver.py` as an unprivileged user with `/app` read-only and no network access; each case has a 900-second wall-clock limit and at most 5000 messages. Standard output carries only protocol lines, so write diagnostics to standard error. A message that is not a JSON object with an `action` field ends the session.
+The grader runs `solver.py` as an unprivileged user with `/app` read-only and no network access; each case has a 900-second wall-clock limit and at most 5000 messages. Standard output carries only protocol lines, so write diagnostics to standard error. A message that is not a JSON object with an `action` field, or a protocol line longer than 1,048,576 characters, ends the session.
 
 ### Actions
 
@@ -22,7 +22,7 @@ The grader runs `solver.py` as an unprivileged user with `/app` read-only and no
 
 ## Model
 
-Per well, 20000 droplets are generated and n_acc of them are accepted, n_acc = Normal(17500, 1200) rounded down and clipped to [13000, 19800]. With GE = input_ng x 303 x load (load log-normal, 4% spread; 303 cell-equivalents per ng is a fixture of this model, see SOURCES.md):
+Per well, 20000 droplets are generated and n_acc of them are accepted, n_acc = Normal(17500, 1200) rounded down and clipped to [13000, 19800]. With GE = input_ng x 151.5 x load (load log-normal, 4% spread; 151.5 diploid cell-equivalents per ng from 6.6 pg per diploid genome):
 
 - reference copies 2 x GE; vector copies GE x (v + n x d); d = 1 for early DNA, 0.5^4 = 0.0625 for late DNA
 - efficiency eta = 1 / (1 + k x input_ng / 10) for the vector and spike assays; 1 for the reference
