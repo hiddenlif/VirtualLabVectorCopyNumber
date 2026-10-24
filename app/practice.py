@@ -1,4 +1,5 @@
 """Run solver.py against the disclosed practice case and print metrics with known truth."""
+
 import json
 import sys
 from pathlib import Path
@@ -21,9 +22,18 @@ def main():
         if r.get("estimate") is None:
             print(lid, "no estimate")
             continue
-        print("%s true=%.3f est=%.3f rel_err=%.3f ci_covers=%s integration_call_correct=%s (non-integrated early %.2f, inhibitor k %.2f)"
-              % (lid, r["true_integrated_vcn"], r["estimate"], r["rel_error"], r["ci_covers"],
-                 r["integration_call_correct"], r["true_nonintegrated_early"], r["k_inhibitor"]))
+        print(
+            "{} true={:.3f} est={:.3f} rel_err={:.3f} ci_covers={} integration_call_correct={} (non-integrated early {:.2f}, inhibitor k {:.2f})".format(
+                lid,
+                r["true_integrated_vcn"],
+                r["estimate"],
+                r["rel_error"],
+                r["ci_covers"],
+                r["integration_call_correct"],
+                r["true_nonintegrated_early"],
+                r["k_inhibitor"],
+            )
+        )
     ok, why = lab.check_rules(m)
     print("plate control call correct:", m["ntc_call_correct"])
     print("meets the published rules on this case:", ok, why)
