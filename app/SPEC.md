@@ -8,6 +8,8 @@ Same JSON-lines exchange as in `labclient.py`: a `hello` line carries the config
 `{"action": ..., ...}` lines and reads `{"ok": true, "result": ...}` or `{"ok": false, "error": ...}`,
 and ends with `{"action": "submit", "result": {...}}`.
 
+The grader runs `solver.py` as an unprivileged user with `/app` read-only and no network access; each case has a 900-second wall-clock limit and at most 5000 messages. Standard output carries only protocol lines, so write diagnostics to standard error. A message that is not a JSON object with an `action` field ends the session.
+
 ### Actions
 
 - `status`: wells left, culture days used, DNA stock left per lot and passage, late-passage availability. Changes nothing.
@@ -20,15 +22,17 @@ and ends with `{"action": "submit", "result": {...}}`.
 
 ## Model
 
-Per well, 20000 droplets are generated and about 17500 (varying) are accepted. With GE = input_ng x 303 x load (load log-normal, 4% spread):
+Per well, 20000 droplets are generated and n_acc of them are accepted, n_acc = Normal(17500, 1200) rounded down and clipped to [13000, 19800]. With GE = input_ng x 303 x load (load log-normal, 4% spread; 303 cell-equivalents per ng is a fixture of this model, see SOURCES.md):
 
 - reference copies 2 x GE; vector copies GE x (v + n x d); d = 1 for early DNA, 0.5^4 = 0.0625 for late DNA
 - efficiency eta = 1 / (1 + k x input_ng / 10) for the vector and spike assays; 1 for the reference
 - lambda per droplet = copies x efficiency / 20000, plus the plate background rate on the vector and spike channels
+- `ntc` wells: lambda is the plate background rate on the vector channel and 1e-6 on the reference channel
 - positives ~ Binomial(accepted, 1 - exp(-lambda))
 
-v is the integrated VCN, n the non-integrated vector copies per cell-equivalent in early DNA, k the lot's inhibitor strength.
-A well's VCN estimate is therefore (lambda_vector / efficiency) / (lambda_reference / 2) with lambda = -ln(1 - positive/accepted).
+v is the integrated VCN (the estimand), n the non-integrated vector copies per cell-equivalent in early DNA, k the lot's inhibitor strength.
+With lambda = -ln(1 - positive/accepted), a well estimates ((lambda_vector - background) / efficiency) / (lambda_reference / 2),
+which is v + n for early DNA and v + 0.0625 n for late DNA.
 
 ## Submission
 

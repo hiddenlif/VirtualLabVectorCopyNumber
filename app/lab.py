@@ -1,12 +1,15 @@
 """Synthetic digital PCR: vector copies per cell-equivalent and integration evidence.
 
 Units and definitions
-    cell-equivalent  one diploid genome (3.3 pg, 303 per ng of DNA)
+    cell-equivalent  1/303 ng of DNA, carrying 2 reference copies (a simplified fixture: 3.3 pg is
+                     the haploid human genome mass, so real DNA has about 152 diploid genomes per ng;
+                     the copies-per-cell-equivalent ratio does not depend on this constant)
     reference target RPP30-like locus, 2 copies per cell-equivalent, amplifies fully
     vector target    amplifies with efficiency eta (inhibition), see below
-    VCN              vector copies per cell-equivalent. The estimand is the INTEGRATED VCN:
-                     copies that remain after non-integrated vector DNA has been diluted out
-                     by culture. Early-passage DNA also carries non-integrated copies n_ni.
+    VCN              vector copies per cell-equivalent. The estimand is the INTEGRATED VCN v:
+                     integrated copies only. Early-passage DNA also carries non-integrated
+                     copies n_ni; culture dilutes them to n_ni * 0.0625 but does not remove them,
+                     so late-passage DNA measures v + 0.0625 * n_ni, not v.
 
 One well
     20000 droplets are generated; n_acc of them (about 17500, varying per well) are accepted.
@@ -157,6 +160,8 @@ def evaluate(lab, result):
         try:
             r = lots[lid]
             est, lo, hi = float(r["integrated_vcn"]), float(r["ci"][0]), float(r["ci"][1])
+            if not (np.all(np.isfinite([est, lo, hi])) and lo <= hi):
+                raise ValueError("estimate and interval must be finite with lo <= hi")
             rec.update(estimate=est, ci=[lo, hi], rel_error=abs(est - L["v_int"]) / L["v_int"],
                        abs_error=abs(est - L["v_int"]), ci_covers=bool(lo <= L["v_int"] <= hi),
                        ci_width=hi - lo, integration_call_correct=bool(r["integration_supported"]) == (L["v_int"] >= INTEGRATION_THRESHOLD))
@@ -174,7 +179,7 @@ def check_rules(m):
     why = []
     for lid, r in m["lots"].items():
         if r.get("estimate") is None:
-            why.append("%s: no estimate" % lid)
+            why.append("%s: no valid estimate and interval" % lid)
             continue
         if r["abs_error"] > max(RULES["max_rel_error"] * r["true_integrated_vcn"], RULES["min_abs_tolerance"]):
             why.append("%s: estimate %.3f outside tolerance" % (lid, r["estimate"]))
