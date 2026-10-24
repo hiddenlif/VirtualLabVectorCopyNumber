@@ -1,4 +1,4 @@
-# Virtual Lab: vector copy number
+# Virtual Lab Task: Digital PCR Vector Copy Number
 
 Allocate digital PCR wells across three synthetic DNA lots, choose dilution (DNA input), controls and culture time, and use the returned partition counts to estimate integrated vector copies per cell-equivalent and decide whether each lot supports an integration claim. Choices change the simulated counts and use up a well budget, DNA stock and virtual days.
 
